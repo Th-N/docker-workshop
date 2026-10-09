@@ -1,11 +1,24 @@
+# Start with slim Python 3.13 image for smaller size
 FROM python:3.13.11-slim
 
-# Set up image by installing prerequisites
-RUN pip install pandas pyarrow
+# Copy uv binary from official uv image
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
 
-# Create the destination directory inside the image
-WORKDIR /code
-COPY pipeline.py .
+# Set working directory inside container
+WORKDIR /app
 
-# Defines what to do first when the container runs
-ENTRYPOINT ["python", "pipeline.py"]
+# Add virtual environment to PATH
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Copy dependency files first (better caching)
+COPY "pyproject.toml" "uv.lock" ".python-version" ./
+COPY src/ ./src/
+
+# Install all dependencies (pandas, sqlalchemy, psycopg2)
+RUN uv sync --locked --no-install-project
+
+# Copy ingestion script
+COPY ingest_data.py ingest_data.py 
+
+# Set entry point to run the ingestion script
+ENTRYPOINT [ "python", "ingest_data.py" ]

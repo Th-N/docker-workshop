@@ -1,12 +1,12 @@
 import sys
-import pandas as pd
 print("arguments", sys.argv)
 
 day = int(sys.argv[1])
 print(f"Running pipeline for day {day}")
 
-df = pd.DataFrame({"day": [1, 2], "num_passengers": [3,4]})
-df['day'] = day
+import pandas as pd
+
+df = pd.DataFrame({"A": [1, 2], "B": [3, 4]})
 print(df.head())
 
-df.to_parquet(f"outout_{day}.parquet")
+df.to_parquet(f"output_day_{sys.argv[1]}.parquet")
